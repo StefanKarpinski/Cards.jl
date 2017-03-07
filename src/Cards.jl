@@ -1,6 +1,6 @@
 module Cards
 
-export Suit, Card, Hand, ♣, ♢, ♡, ♠, ¬
+export Suit, Card, Hand, ♣, ♢, ♡, ♠, ..
 
 import Base.Operators: *, ∩, ∪
 
@@ -126,7 +126,11 @@ end
 
 const deck = Hand(Card(r,s) for s in suits for r = 2:14)
 
-@eval ¬(h::Hand) = Hand($(deck.cards) & ~h.cards)
 @eval Base.rand(::Type{Hand}) = Hand($(deck.cards) & rand(UInt64))
+
+*(rr::OrdinalRange{<:Integer}, s::Suit) = Hand(Card(r,s) for r in rr)
+..(r::Integer, c::Card) = (r:rank(c))*suit(c)
+..(a::Card, b::Card) = suit(a) == suit(b) ? rank(a)..b :
+    throw(ArgumentError("card ranges need matching suits: $a vs $b"))
 
 end # module
