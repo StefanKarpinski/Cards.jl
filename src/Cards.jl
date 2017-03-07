@@ -101,6 +101,7 @@ end
 Base.in(c::Card, h::Hand) = (bit(c) & h.cards) != 0
 Base.length(h::Hand) = count_ones(h.cards)
 Base.isempty(h::Hand) = h.cards == 0
+Base.endof(h::Hand) = length(h)
 
 Base.start(h::Hand) = trailing_zeros(h.cards) % UInt8
 Base.done(h::Hand, s::UInt8) = (h.cards >>> s) == 0
@@ -108,6 +109,24 @@ Base.done(h::Hand, s::UInt8) = (h.cards >>> s) == 0
 function Base.next(h::Hand, s::UInt8)
     c = Card(s); s += 0x1
     c, s + trailing_zeros(h.cards >>> s) % UInt8
+end
+
+function Base.getindex(h::Hand, i::Int)
+    @boundscheck 1 ≤ i ≤ length(h) || throw(BoundsError(h,i))
+    card = 0x00
+    mask = 0xffff_ffff_ffff_ffff >> (32 - card)
+    card += UInt8(i > count_ones(h.cards & mask)) << 5
+    mask = 0xffff_ffff_ffff_ffff >> (48 - card)
+    card += UInt8(i > count_ones(h.cards & mask)) << 4
+    mask = 0xffff_ffff_ffff_ffff >> (56 - card)
+    card += UInt8(i > count_ones(h.cards & mask)) << 3
+    mask = 0xffff_ffff_ffff_ffff >> (60 - card)
+    card += UInt8(i > count_ones(h.cards & mask)) << 2
+    mask = 0xffff_ffff_ffff_ffff >> (62 - card)
+    card += UInt8(i > count_ones(h.cards & mask)) << 1
+    mask = 0xffff_ffff_ffff_ffff >> (63 - card)
+    card += UInt8(i > count_ones(h.cards & mask)) << 0
+    return Card(card)
 end
 
 function Base.show(io::IO, hand::Hand)
