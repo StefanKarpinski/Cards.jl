@@ -87,29 +87,34 @@ struct Hand <: AbstractSet{Card}
     Hand(cards::UInt64) = new(cards)
 end
 
-index(c::Card) = one(UInt64) << c.value
+bit(c::Card) = one(UInt64) << c.value
 
 function Hand(cards)
     hand = Hand(zero(UInt64))
     for card in cards
         card isa Card || throw(ArgumentError("not a card: $repr(card)"))
-        hand = Hand(hand.cards | index(card))
+        hand = Hand(hand.cards | bit(card))
     end
     return hand
 end
 
-Base.in(c::Card, h::Hand) = (index(c) & h.cards) != 0
+Base.in(c::Card, h::Hand) = (bit(c) & h.cards) != 0
 Base.length(h::Hand) = count_ones(h.cards)
+Base.isempty(h::Hand) = h.cards == 0
+
+Base.start(h::Hand) = trailing_zeros(h.cards) % UInt8
+Base.done(h::Hand, s::UInt8) = (h.cards >>> s) == 0
+
+function Base.next(h::Hand, s::UInt8)
+    c = Card(s); s += 0x1
+    c, s + trailing_zeros(h.cards >>> s) % UInt8
+end
 
 function Base.show(io::IO, hand::Hand)
     print(io, "Hand([")
-    n = 63 - leading_zeros(hand.cards)
-    for value = 0:n
-        card = Card(value)
-        if card in hand
-            print(io, card)
-            value < n && print(io, ", ")
-        end
+    for card in hand
+        print(io, card)
+        (bit(card) << 1) ≤ hand.cards && print(io, ", ")
     end
     print(io, "])")
 end
