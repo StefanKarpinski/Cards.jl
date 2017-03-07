@@ -13,16 +13,14 @@ This package defines three types:
   * 4 bits for the rank from 0-15, meaning:
     * 0 – low joker
     * 1 – low ace
-    * 2-10 – numbered cards
-    * 11 – jack
-    * 12 – queen
-    * 13 – king
+    * 2-10 – number cards
+    * 11-13 – jack, queen, king
     * 14 – high ace
     * 15 – high joker
 
 * `Hand`: uses 64 bits of a `UInt64` to represent all possible hands (sets) of cards.
 
-The design of having both high and low aces and jokers allows hands from many different games to be represented in a single scheme, with consistent rank ordering. If you're representing hands from a game with aces high, use the `A♣`, `A♢`, `A♡`, `A♠` cards; if you're representing hands from a game with aces low, use the `1♣`, `1♢`, `1♡`, `1♠` cards instead.
+The design of having high and low aces and jokers allows hands from many different games to be represented in a single scheme, with consistent rank ordering. If you're representing hands from a game with aces high, use the `A♣`, `A♢`, `A♡`, `A♠` cards; if you're representing hands from a game with aces low, use the `1♣`, `1♢`, `1♡`, `1♠` cards instead.
 
 ## Example usage:
 
@@ -50,6 +48,6 @@ Hand([4♡, 5♡, 6♡, 7♡, Q♡, K♡, A♡])
 julia> ♠ ∩ hand
 Hand([4♠, 6♠, 9♠, K♠, A♠])
 
-julia> length(hand ∩ ♣)
+julia> length(♣ ∩ hand)
 6
 ```
