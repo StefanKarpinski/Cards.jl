@@ -6,9 +6,9 @@
 
 This package defines three types:
 
-* `Suit`: uses 2 low bits of a `UInt8` to represent four suits of cards: ♣, ♢, ♡, ♠.
+* `Suit` uses 2 low bits of a `UInt8` to represent four suits of cards: ♣, ♢, ♡, ♠.
 
-* `Card`: uses 6 low bits of a `UInt8` to represent 64 possible card values:
+* `Card` uses 6 low bits of a `UInt8` to represent 64 possible card values:
   * 2 bits for the `Suit` (♣, ♢, ♡, ♠)
   * 4 bits for the rank from 0-15, meaning:
     * 0 – low joker
@@ -18,7 +18,7 @@ This package defines three types:
     * 14 – high ace
     * 15 – high joker
 
-* `Hand`: uses 64 bits of a `UInt64` to represent all possible hands (sets) of cards.
+* `Hand` uses 64 bits of a `UInt64` to represent all possible hands (sets) of cards.
 
 The design of having high and low aces and jokers allows hands from many different games to be represented in a single scheme, with consistent rank ordering. If you're representing hands from a game with aces high, use the `A♣`, `A♢`, `A♡`, `A♠` cards; if you're representing hands from a game with aces low, use the `1♣`, `1♢`, `1♡`, `1♠` cards instead.
 
