@@ -16,7 +16,7 @@ This package defines three types:
     * 0 – low joker
     * 1 – low ace
     * 2-10 – numbered cards
-    * 11 – joker
+    * 11 – jack
     * 12 – queen
     * 13 – king
     * 14 – high ace
