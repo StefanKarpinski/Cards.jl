@@ -93,7 +93,9 @@ function Hand(cards)
     hand = Hand(zero(UInt64))
     for card in cards
         card isa Card || throw(ArgumentError("not a card: $repr(card)"))
-        hand = Hand(hand.cards | bit(card))
+        i = bit(card)
+        hand.cards & i == 0 || throw(ArgumentError("duplicate cards are not supported"))
+        hand = Hand(hand.cards | i)
     end
     return hand
 end
