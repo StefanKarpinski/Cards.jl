@@ -16,7 +16,7 @@ The suits have global constant bindings: `♣`, `♢`, `♡`, `♠`.
 """
 struct Suit
     i::UInt8
-    Suit(s::Integer) = s < 4 ? new(s) :
+    Suit(s::Integer) = 0 ≤ s ≤ 3 ? new(s) :
         throw(ArgumentError("invalid suit number: $s"))
 end
 
@@ -110,9 +110,10 @@ function Base.show(io::IO, hand::Hand)
     n = 63 - leading_zeros(hand.cards)
     for value = 0:n
         card = Card(value)
-        card in hand || continue
-        print(io, card)
-        value < n && print(io, ", ")
+        if card in hand
+            print(io, card)
+            value < n && print(io, ", ")
+        end
     end
     print(io, "])")
 end
