@@ -1,9 +1,7 @@
 # Cards
 
 [![Build Status](https://travis-ci.org/StefanKarpinski/Cards.jl.svg?branch=master)](https://travis-ci.org/StefanKarpinski/Cards.jl)
-
 [![Coverage Status](https://coveralls.io/repos/StefanKarpinski/Cards.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/StefanKarpinski/Cards.jl?branch=master)
-
 [![codecov.io](http://codecov.io/github/StefanKarpinski/Cards.jl/coverage.svg?branch=master)](http://codecov.io/github/StefanKarpinski/Cards.jl?branch=master)
 
 This package defines three types:
@@ -45,4 +43,13 @@ false
 
 julia> A♠ in hand
 true
+
+julia> ♡ ∩ hand
+Hand([4♡, 5♡, 6♡, 7♡, Q♡, K♡, A♡])
+
+julia> ♠ ∩ hand
+Hand([4♠, 6♠, 9♠, K♠, A♠])
+
+julia> length(hand ∩ ♣)
+6
 ```

@@ -75,14 +75,13 @@ end
 *(r::Integer, s::Suit) = Card(r, s)
 
 for s in "♣♢♡♠", (r,f) in zip(11:14, "JQKA")
-    ss = Symbol(s)
-    sc = Symbol("$f$s")
-    @eval begin
-        const $sc = Card($r,$ss)
-        export $sc
-    end
+    ss, sc = Symbol(s), Symbol("$f$s")
+    @eval (export $sc; const $sc = Card($r,$ss))
 end
 
+"""
+Represent a hand (set) of cards using a `UInt64` bit set.
+"""
 struct Hand <: AbstractSet{Card}
     cards::UInt64
     Hand(cards::UInt64) = new(cards)
@@ -90,9 +89,6 @@ end
 
 index(c::Card) = one(UInt64) << c.value
 
-"""
-Represent a hand (set) of cards using a `UInt64` bit set.
-"""
 function Hand(cards)
     hand = Hand(zero(UInt64))
     for card in cards
@@ -102,8 +98,8 @@ function Hand(cards)
     return hand
 end
 
-Base.length(h::Hand) = count_ones(h.cards)
 Base.in(c::Card, h::Hand) = (index(c) & h.cards) != 0
+Base.length(h::Hand) = count_ones(h.cards)
 
 function Base.show(io::IO, hand::Hand)
     print(io, "Hand([")
@@ -120,6 +116,8 @@ end
 
 ∪(a::Hand, b::Hand) = Hand(a.cards | b.cards)
 ∩(a::Hand, b::Hand) = Hand(a.cards & b.cards)
+∩(h::Hand, s::Suit) = Hand(h.cards & (UInt64(0xffff) << 16(s.i)))
+∩(s::Suit, h::Hand) = h ∩ s
 
 const deck = Hand(Card(r,s) for s in suits for r = 2:14)
 
