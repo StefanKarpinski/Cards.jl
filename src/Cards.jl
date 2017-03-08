@@ -113,14 +113,21 @@ function Base.next(h::Hand, s::UInt8)
     c, s + trailing_zeros(h.cards >>> s) % UInt8
 end
 
-function Base.getindex(h::Hand, i::Int)
-    @boundscheck 1 ≤ i ≤ length(h) || throw(BoundsError(h,i))
-    card = 0x00
-    for s = 5:-1:0
-        mask = 0xffff_ffff_ffff_ffff >> (64 - (1<<s) - card)
-        card += UInt8(i > count_ones(h.cards & mask)) << s
+function Base.unsafe_getindex(h::Hand, i::UInt8)
+    card, s = 0x0, 0x5
+    while true
+        mask = 0xffff_ffff_ffff_ffff >> (0x40 - (0x1<<s) - card)
+        card += UInt8(i > count_ones(h.cards & mask) % UInt8) << s
+        s > 0 || break
+        s -= 0x1
     end
     return Card(card)
+end
+Base.unsafe_getindex(h::Hand, i::Integer) = Base.unsafe_getindex(h, i % UInt8)
+
+function Base.getindex(h::Hand, i::Integer)
+    @boundscheck 1 ≤ i ≤ length(h) || throw(BoundsError(h,i))
+    return Base.unsafe_getindex(h, i)
 end
 
 function Base.show(io::IO, hand::Hand)
