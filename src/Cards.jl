@@ -116,18 +116,10 @@ end
 function Base.getindex(h::Hand, i::Int)
     @boundscheck 1 ≤ i ≤ length(h) || throw(BoundsError(h,i))
     card = 0x00
-    mask = 0xffff_ffff_ffff_ffff >> (32 - card)
-    card += UInt8(i > count_ones(h.cards & mask)) << 5
-    mask = 0xffff_ffff_ffff_ffff >> (48 - card)
-    card += UInt8(i > count_ones(h.cards & mask)) << 4
-    mask = 0xffff_ffff_ffff_ffff >> (56 - card)
-    card += UInt8(i > count_ones(h.cards & mask)) << 3
-    mask = 0xffff_ffff_ffff_ffff >> (60 - card)
-    card += UInt8(i > count_ones(h.cards & mask)) << 2
-    mask = 0xffff_ffff_ffff_ffff >> (62 - card)
-    card += UInt8(i > count_ones(h.cards & mask)) << 1
-    mask = 0xffff_ffff_ffff_ffff >> (63 - card)
-    card += UInt8(i > count_ones(h.cards & mask)) << 0
+    for s = 5:-1:0
+        mask = 0xffff_ffff_ffff_ffff >> (64 - (1<<s) - card)
+        card += UInt8(i > count_ones(h.cards & mask)) << s
+    end
     return Card(card)
 end
 
