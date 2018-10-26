@@ -2,7 +2,7 @@ module Cards
 
 export Suit, Card, Hand, ♣, ♢, ♡, ♠, ..
 
-import Base.Operators: *, ∩, ∪
+import Base: *, ∩, ∪
 
 """
 Encode a suit as a 2-bit value (low bits of a `UInt8`):
@@ -103,13 +103,11 @@ end
 Base.in(c::Card, h::Hand) = (bit(c) & h.cards) != 0
 Base.length(h::Hand) = count_ones(h.cards)
 Base.isempty(h::Hand) = h.cards == 0
-Base.endof(h::Hand) = length(h)
+Base.lastindex(h::Hand) = length(h)
 
-Base.start(h::Hand) = trailing_zeros(h.cards) % UInt8
-Base.done(h::Hand, s::UInt8) = (h.cards >>> s) == 0
-
-function Base.next(h::Hand, s::UInt8)
-    c = Card(s); s += 0x1
+function Base.iterate(h::Hand, s::UInt8 = trailing_zeros(h.cards) % UInt8)
+    (h.cards >>> s) == 0 && return nothing
+    c = Card(s); s += true
     c, s + trailing_zeros(h.cards >>> s) % UInt8
 end
 
