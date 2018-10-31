@@ -1,6 +1,6 @@
 module Cards
 
-export Suit, Card, Hand, ♣, ♢, ♡, ♠, ..
+export Suit, Card, Hand, ♣, ♢, ♡, ♠, .., deal, points
 
 import Base: *, |, &
 
@@ -131,12 +131,30 @@ function Base.getindex(h::Hand, i::Integer)
 end
 
 function Base.show(io::IO, hand::Hand)
-    print(io, "Hand([")
-    for card in hand
-        print(io, card)
-        (bit(card) << 1) ≤ hand.cards && print(io, ", ")
+    if isempty(hand) || !get(io, :compact, false)
+        print(io, "Hand([")
+        for card in hand
+            print(io, card)
+            (bit(card) << 1) ≤ hand.cards && print(io, ", ")
+        end
+        print(io, "])")
+    else
+        for suit in suits
+            s = hand & suit
+            isempty(s) && continue
+            show(io, suit)
+            for card in s
+                r = rank(card)
+                if r == 10
+                    print(io, '\u2491')
+                elseif 1 ≤ r ≤ 14
+                    print(io, "1234567890JQKA"[r])
+                else
+                    print(io, '\U1f0cf')
+                end
+            end
+        end
     end
-    print(io, "])")
 end
 
 a::Hand | b::Hand = Hand(a.cards | b.cards)
@@ -152,23 +170,19 @@ s::Suit & h::Hand = h & s
 ..(a::Card, b::Card) = suit(a) == suit(b) ? rank(a)..b :
     throw(ArgumentError("card ranges need matching suits: $a vs $b"))
 
-using Random
-
 const deck = Hand(Card(r,s) for s in suits for r = 2:14)
 
 Base.empty(::Type{Hand}) = Hand(zero(UInt64))
 
 @eval Base.rand(::Type{Hand}) = Hand($(deck.cards) & rand(UInt64))
 
-function deal(rng::AbstractRNG = Random.GLOBAL_RNG)
-    hands = [empty(Hand) for _ in 1:4]
-    counts = [13 for _ in 1:4]
+function deal!(counts::Vector{<:Integer}, hands::AbstractArray{Hand}, offset::Int=0)
     for rank = 2:14, suit = 0:3
         while true
-            hand = rand(rng, 1:4)
+            hand = rand(1:4)
             if counts[hand] > 0
                 counts[hand] -= 1
-                hands[hand] |= Card(rank, suit)
+                hands[offset + hand] |= Card(rank, suit)
                 break
             end
         end
@@ -176,10 +190,21 @@ function deal(rng::AbstractRNG = Random.GLOBAL_RNG)
     return hands
 end
 
+deal() = deal!(fill(13, 4), fill(empty(Hand), 4))
+
+function deal(n::Int)
+    counts = fill(0x0, 4)
+    hands = fill(empty(Hand), 4, n)
+    for i = 1:n
+        deal!(fill!(counts, 13), hands, 4(i-1))
+    end
+    return permutedims(hands)
+end
+
 function points(hand::Hand)
     p = 0
     for rank = 11:14, suit = 0:3
-        card = Card(rank, Suit(suit))
+        card = Card(rank, suit)
         p += (rank-10)*(card in hand)
     end
     return p
