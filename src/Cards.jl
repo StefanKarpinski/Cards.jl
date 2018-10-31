@@ -152,10 +152,37 @@ s::Suit & h::Hand = h & s
 ..(a::Card, b::Card) = suit(a) == suit(b) ? rank(a)..b :
     throw(ArgumentError("card ranges need matching suits: $a vs $b"))
 
+using Random
+
 const deck = Hand(Card(r,s) for s in suits for r = 2:14)
 
 Base.empty(::Type{Hand}) = Hand(zero(UInt64))
 
 @eval Base.rand(::Type{Hand}) = Hand($(deck.cards) & rand(UInt64))
+
+function deal(rng::AbstractRNG = Random.GLOBAL_RNG)
+    hands = [empty(Hand) for _ in 1:4]
+    counts = [13 for _ in 1:4]
+    for rank = 2:14, suit = 0:3
+        while true
+            hand = rand(rng, 1:4)
+            if counts[hand] > 0
+                counts[hand] -= 1
+                hands[hand] |= Card(rank, suit)
+                break
+            end
+        end
+    end
+    return hands
+end
+
+function points(hand::Hand)
+    p = 0
+    for rank = 11:14, suit = 0:3
+        card = Card(rank, Suit(suit))
+        p += (rank-10)*(card in hand)
+    end
+    return p
+end
 
 end # Cards
