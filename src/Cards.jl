@@ -2,7 +2,7 @@ module Cards
 
 export Suit, Card, Hand, ♣, ♢, ♡, ♠, ..
 
-import Base: *, ∩, ∪
+import Base: *, |, &
 
 """
 Encode a suit as a 2-bit value (low bits of a `UInt8`):
@@ -53,10 +53,11 @@ struct Card
     value::UInt8
 end
 
-function Card(r::Integer, s::Suit)
+function Card(r::Integer, s::Integer)
     0 ≤ r ≤ 15 || throw(ArgumentError("invalid card rank: $r"))
-    return Card((s.i << 4) | (r % UInt8))
+    return Card((s << 4) | (r % UInt8))
 end
+Card(r::Integer, s::Suit) = Card(r, s.i)
 
 suit(c::Card) = Suit((0x30 & c.value) >>> 4)
 rank(c::Card) = (c.value & 0x0f) % Int8
@@ -88,6 +89,7 @@ struct Hand <: AbstractSet{Card}
 end
 
 bit(c::Card) = one(UInt64) << c.value
+bits(s::Suit) = UInt64(0xffff) << 16(s.i)
 
 function Hand(cards)
     hand = Hand(zero(UInt64))
@@ -137,18 +139,23 @@ function Base.show(io::IO, hand::Hand)
     print(io, "])")
 end
 
-∪(a::Hand, b::Hand) = Hand(a.cards | b.cards)
-∩(a::Hand, b::Hand) = Hand(a.cards & b.cards)
-∩(h::Hand, s::Suit) = Hand(h.cards & (UInt64(0xffff) << 16(s.i)))
-∩(s::Suit, h::Hand) = h ∩ s
+a::Hand | b::Hand = Hand(a.cards | b.cards)
+a::Hand | c::Card = Hand(a.cards | bit(c))
+c::Card | h::Hand = h | c
 
-const deck = Hand(Card(r,s) for s in suits for r = 2:14)
-
-@eval Base.rand(::Type{Hand}) = Hand($(deck.cards) & rand(UInt64))
+a::Hand & b::Hand = Hand(a.cards & b.cards)
+h::Hand & s::Suit = Hand(h.cards & bits(s))
+s::Suit & h::Hand = h & s
 
 *(rr::OrdinalRange{<:Integer}, s::Suit) = Hand(Card(r,s) for r in rr)
 ..(r::Integer, c::Card) = (r:rank(c))*suit(c)
 ..(a::Card, b::Card) = suit(a) == suit(b) ? rank(a)..b :
     throw(ArgumentError("card ranges need matching suits: $a vs $b"))
 
-end # module
+const deck = Hand(Card(r,s) for s in suits for r = 2:14)
+
+Base.empty(::Type{Hand}) = Hand(zero(UInt64))
+
+@eval Base.rand(::Type{Hand}) = Hand($(deck.cards) & rand(UInt64))
+
+end # Cards
