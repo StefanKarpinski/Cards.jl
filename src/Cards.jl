@@ -55,7 +55,7 @@ end
 
 function Card(r::Integer, s::Integer)
     0 ≤ r ≤ 15 || throw(ArgumentError("invalid card rank: $r"))
-    return Card((s << 4) | (r % UInt8))
+    return Card(((s << 4) % UInt8) | (r % UInt8))
 end
 Card(r::Integer, s::Suit) = Card(r, s.i)
 
