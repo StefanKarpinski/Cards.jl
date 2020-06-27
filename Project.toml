@@ -1,0 +1,4 @@
+name = "Cards"
+uuid = "fcda22a9-0d6a-4819-86f5-13bd25ca17c4"
+authors = ["Stefan Karpinski <stefan@karpinski.org>"]
+version = "0.1.1"
