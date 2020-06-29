@@ -165,6 +165,9 @@ a::Hand & b::Hand = Hand(a.cards & b.cards)
 h::Hand & s::Suit = Hand(h.cards & bits(s))
 s::Suit & h::Hand = h & s
 
+Base.intersect(s::Suit, h::Hand) = h & s
+Base.intersect(h::Hand, s::Suit) = intersect(s::Suit, h::Hand) 
+
 *(rr::OrdinalRange{<:Integer}, s::Suit) = Hand(Card(r,s) for r in rr)
 ..(r::Integer, c::Card) = (r:rank(c))*suit(c)
 ..(a::Card, b::Card) = suit(a) == suit(b) ? rank(a)..b :
